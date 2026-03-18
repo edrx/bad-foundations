@@ -114,7 +114,7 @@
  * Loads: (find-baf "edrxbox.lisp")
  *        (find-baf "edrxbox-examples.lisp")
  *        (find-baf   "lisptree.lisp")
- *        (find-baf "lisptree.mac" "load-lisp")
+ *        (find-baf "lisptree.mac" "load")
  *        (find-baf "lisptree.mac")
  *        (find-baf "lazy-ops.lisp")
  *        (find-baf "display-delegate.lisp")

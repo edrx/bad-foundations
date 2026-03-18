@@ -3,7 +3,7 @@
 ;;   https://anggtwu.net/bad-foundations/bad-foundations.lisp
 ;;           (find-angg "bad-foundations/bad-foundations.lisp")
 ;; Author: Eduardo Ochs <eduardoochs@gmail.com>
-;; Version: 2026mar01
+;; Version: 2026mar18
 ;; License: GPL v2
 ;;
 ;; This file is loaded by:
@@ -247,8 +247,9 @@ tex1(a/b);
 ;; See: (find-baf "bad-foundations.mac" "fp-and-gp")
 ;;      (find-baf "edrxbox.lisp" "append")
 ;;      
-(setf (get '$fp 'dimension) 'dim-fp)
-(setf (get '$gp 'dimension) 'dim-gp)
+(setf (get  '$fp  'dimension)  'dim-fp)
+(setf (get  '$gp  'dimension)  'dim-gp)
+(setf (get '|$Fp| 'dimension) '|dim-Fp|)
 
 (defun dim-fp (form result)
   (run-in-edrxbox-dim
@@ -260,6 +261,11 @@ tex1(a/b);
    (edrxboxvars-append-function "g'" (rest form))
    (edrxboxvars-push-x-y-end)))
 
+(defun |dim-Fp| (form result)
+  (run-in-edrxbox-dim
+   (edrxboxvars-append-function "F'" (rest form))
+   (edrxboxvars-push-x-y-end)))
+
 #|
  «fp-and-gp-tests»  (to ".fp-and-gp-tests")
  (eepitch-maxima)
@@ -268,7 +274,7 @@ tex1(a/b);
 load("edrxbox.lisp");
 load("edrxbox-examples.lisp");
 load("bad-foundations.lisp");
-[fp(g(x)), gp(x)];
+[fp(g(x)), gp(x), Fp(x)];
 
 |#
 
