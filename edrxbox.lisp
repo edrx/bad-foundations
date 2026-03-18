@@ -1,4 +1,4 @@
-\;; This file:
+;; This file:
 ;;   https://anggtwu.net/bad-foundations/edrxbox.lisp.html
 ;;   https://anggtwu.net/bad-foundations/edrxbox.lisp
 ;;           (find-angg "bad-foundations/edrxbox.lisp")
