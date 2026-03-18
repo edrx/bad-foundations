@@ -1,0 +1,199 @@
+/*
+ * This file:
+ *   https://anggtwu.net/bad-foundations/edrx-myintegrates.mac.html
+ *   https://anggtwu.net/bad-foundations/edrx-myintegrates.mac
+ *           (find-angg "bad-foundations/edrx-myintegrates.mac")
+ *                            (find-baf "edrx-myintegrates.mac")
+ *     See: http://anggtwu.net/bad-foundations.html#change-of-variables
+ *  Author: Eduardo Ochs <eduardoochs@gmail.com>
+ * License: Public Domain
+ *    Date: 2026mar03
+ *
+ * This file defines a "class" - i.e., a "structure with methods" -
+ * that can be used to draw changes of variables using underbraces.
+ * For example:
+ *
+ *   (%i3) mi : new(myintegrates(cos(u), x^2, 2*x, x, u, sin(u)))$
+ *   (%i4) mi@@L_u() = mi@@R();
+ *                              ⌠                  ⌠
+ *                              ⎮      2           ⎮
+ *   (%o4)                      ⎮ cos(x ) 2 x dx = ⎮ cos(u) du
+ *                              ⎮     ::  :::      ⎮
+ *                              ⌡     u   du       ⌡
+ *                                        ──
+ *                                        dx
+ *                                        ::::::
+ *                                          du
+ *
+ * See: (find-baf "edrxbox-examples.lisp" "myintegrate")
+ *      (find-baf "edrxbox-examples.lisp" "_d")
+ *      (find-baf "edrx-methods.lisp")
+ *
+ * This file is a quick hack full of bad notational conventions -
+ * for example, in some places a "u" in a name means "using u
+ * instead of g(x)", and in other places it means "with an
+ * underbrace"... I need to rewrite this!
+ *
+ * «.myintegrates»		(to "myintegrates")
+ * «.myintegrates-tests»	(to "myintegrates-tests")
+ * «.latex»			(to "latex")
+*/
+
+
+texput(sd0, sd0_tex);
+sd0_tex(o) := format("\\setdepthto{0pt}{~a}", tex1(args(o)[1]));
+
+/* «myintegrates»  (to ".myintegrates")
+*/
+defstruct(myintegrates(fu,gx,gpx,x_,u_,Fu));
+myintegrates__du    (myi) := _d(myi@u_)$
+myintegrates__dx    (myi) := _d(myi@x_)$
+myintegrates__dudx  (myi) := _diff(myi@u_, myi@x_, 1)$
+myintegrates__dudx  (myi) := myi@@du() /. myi@@dx()$
+myintegrates__u_gx  (myi) := underbrace(myi@u_,myi@gx);
+myintegrates__gx_u  (myi) := underbrace(myi@gx,myi@u_);
+myintegrates__fgx   (myi) := subst([myi@u_=myi@gx],      myi@fu)$
+myintegrates__fgx_u (myi) := subst([myi@u_=myi@@gx_u()], myi@fu)$
+myintegrates__fu_gx (myi) := subst([myi@u_=myi@@u_gx()], myi@fu)$
+myintegrates__gpx_u (myi) := underbrace(myi@gpx, myi@@dudx());
+myintegrates__gpx_du(myi) := underbrace(myi@@gpx_u() *. myi@@dx(), myi@@du());
+myintegrates__L     (myi) := myintegrate(myi@@fgx() *. myi@gpx, myi@x_);
+myintegrates__L_u   (myi) := myintegrate(myi@@fgx_u() *. myi@@gpx_du());
+myintegrates__du_x  (myi) := underbrace(myi@@du(), myi@@dudx() *. myi@@dx());
+myintegrates__du_gpx(myi) := underbrace(myi@@du_x(), myi@gpx *. myi@@dx());
+myintegrates__R     (myi) := myintegrate(myi@fu, myi@u_);
+myintegrates__R_u   (myi) := myintegrate(myi@@fu_gx() *. myi@@du_gpx());
+
+myintegrates__LR    (myi) := myi@@L  () = myi@@R  ();
+myintegrates__LR_u  (myi) := myi@@L_u() = myi@@R_u();
+myintegrates__FGx   (myi) := subst([myi@u_=myi@gx], myi@Fu);
+myintegrates__LM    (myi) := myi@@FGx();
+myintegrates__RM    (myi) := myi@Fu;
+myintegrates__LRI3  (myi) := myi@@L() =. myi@@LM() =. myi@@RM() =. myi@@R();
+myintegrates__LR6   (myi) := align_eqs(myi@@LR(),              myi@@LRI3());
+myintegrates__LR8   (myi) := align_eqs(myi@@LR(), myi@@LR_u(), myi@@LRI3());
+
+myintegrates__xa    (myi) := myi@x_ = a;
+myintegrates__xb    (myi) := myi@x_ = b;
+myintegrates__ga    (myi) := subst([myi@x_=a], myi@gx)$
+myintegrates__gb    (myi) := subst([myi@x_=b], myi@gx)$
+myintegrates__Fga   (myi) := subst([myi@u_=myi@@ga()], myi@Fu)$
+myintegrates__Fgb   (myi) := subst([myi@u_=myi@@gb()], myi@Fu)$
+myintegrates__MMD   (myi) := myi@@Fgb() -. myi@@Fga();
+myintegrates__uga   (myi) := myi@u_ = myi@@ga()$
+myintegrates__ugb   (myi) := myi@u_ = myi@@gb()$
+myintegrates__LMD   (myi) := _At2(myi@@LM(), myi@x_, a, b);
+myintegrates__RMD   (myi) := _At2(myi@@RM(), myi@u_, myi@@ga(), myi@@gb());
+
+myintegrates__LD    (myi) := myintegrate(myi@@fgx() *. myi@gpx, myi@x_, myi@@xa(),  myi@@xb());
+myintegrates__RD    (myi) := myintegrate(myi@fu,                myi@u_, myi@@uga(), myi@@ugb());
+myintegrates__LRD4  (myi) := myi@@LD() =. myi@@LMD() =. myi@@MMD() =. myi@@RMD() =. myi@@RD();
+myintegrates__LR12  (myi) := align_eqs(myi@@LR(), myi@@LR_u(), myi@@LRI3(), myi@@LRD4());
+
+
+
+/*
+ «myintegrates-tests»  (to ".myintegrates-tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+load("edrx-myintegrates.mac");
+
+mm : new(myintegrates(cos(u), x^2, 2*x, x, u, F(u)));
+mm : new(myintegrates(cos(u), x^2, 2*x, x, u, sin(u)));
+mm@gx;
+mm@x_;
+mm@u_;
+mm@@dudx();
+mm@@fgx();
+mm@@u_gx();
+mm@@gx_u();
+mm@@fgx_u();
+mm@@fu_gx();
+mm@@gpx_u();
+mm@@gpx_du();
+mm@@L();
+mm@@L_u();
+mm@@R();
+mm@@du_x();
+mm@@du_gpx();
+mm@@R_u();
+mm@@LR();
+mm@@LR_u();
+mm@@LR4();
+mm@@LR6();
+o8 : mm@@LR8();
+o8 : makebare(mm@@LR8());
+
+mm@@xa();
+mm@@xb();
+mm@@uga();
+mm@@ugb();
+mm@@Fga();
+mm@@Fgb();
+mm@@LMD();
+mm@@RMD();
+mm@@LRD4();
+mm@@LR12();
+o12 : mm@@LR12();
+o12 : makebare(mm@@LR12());
+
+mma : new(myintegrates(fp(u), g(x), gp(x), x, u, f(u)));
+o12a : mma@@LR12();
+o12a : makebare(mma@@LR12());
+
+sa("LR8", o8);
+sa("LR12", o12);
+sa("LR12 abstract", o12a);
+
+sa_bigstr;
+sa_bigstr_writeto("/tmp/o");
+
+*/
+
+
+
+
+
+/*
+ «latex»  (to ".latex")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+load("edrx-myintegrates.mac");
+
+sa_generated_by("(find-baf \"edrx-myintegrates.mac\" \"latex\")");
+
+mms : new(myintegrates(cos(u), x^2, 2*x, x, u, sin(u)));
+mma : new(myintegrates(fp(u), g(x), gp(x), x, u, f(u)));
+o1  : makebare(mms@@LR12());
+o2  : makebare(mma@@LR12());
+dpart(o2, 2,1,1,1,1);
+dpart(o2, 2,3,1,1,1);
+
+mms@@LR();
+mms@@LR6();
+
+o3 : copy(o2);
+o3 : substpart(sd0(piece), o3, 2,1,1,1,1);
+o3 : substpart(sd0(piece), o3, 2,3,1,1,1);
+
+sa("MV sin(x^2)", o1);
+sa("MV abstract", o3);
+
+sa_bigstr;
+sa_bigstr_writeto("/tmp/o");
+
+*/
+
+
+
+
+
+/*
+ * Local Variables:
+ * coding:  utf-8-unix
+ * End:
+*/

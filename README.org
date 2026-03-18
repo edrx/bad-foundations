@@ -1,0 +1,53 @@
+# This file:
+#   https://github.com/edrx/bad-foundations
+#        http://anggtwu.net/bad-foundations/README.org.html
+#        http://anggtwu.net/bad-foundations/README.org
+#               (find-angg "bad-foundations/README.org")
+#               (find-angg "bad-foundations/")
+# Author: Eduardo Ochs <eduardoochs@gmail.com>
+# 
+# Some eev-isms:
+# (defun c  () (interactive) (eek "C-c C-e h h"))
+# (defun o  () (interactive) (find-angg "bad-foundations/README.org"))
+# (defun v  () (interactive) (brg     "~/bad-foundations/README.html"))
+# (defun cv () (interactive) (c) (v))
+# 
+# Skel: (find-mygitrepo-links "bad-foundations")
+#       (find-efunction 'find-mygitrepo-links)
+#  See: (find-angg "pict2e-lua/README.org")
+# 
+# "Bad Foundations and Manipulable Objects" - Maxima code
+# (find-es "magit" "git-add")
+# (find-TH "bad-foundations")
+# 
+# (find-orgnode "Table of Contents")
+#+OPTIONS: toc:nil num:nil
+#+OPTIONS: org-html-postamble:nil
+
+See [[https://anggtwu.net/bad-foundations.html][this page]].
+
+#+begin_comment
+ (eepitch-shell)
+ (eepitch-kill)
+ (eepitch-shell)
+cd ~/bad-foundations/
+laf
+rm -v *~
+rm -v *.html
+
+# (find-fline   "~/bad-foundations/")
+# (magit-status "~/bad-foundations/")
+# (find-gitk    "~/bad-foundations/")
+#
+#   (s)tage all changes
+#   (c)ommit -> (c)reate
+#   (P)ush -> (p)ushremote
+#   https://github.com/edrx/bad-foundations
+#
+#+end_comment
+
+# Local Variables:
+# coding:               utf-8-unix
+# modes:                (org-mode fundamental-mode)
+# org-html-postamble:   nil
+# End:

@@ -1,0 +1,778 @@
+/*
+ * This file:
+ *   https://anggtwu.net/bad-foundations/bad-foundations.mac.html
+ *   https://anggtwu.net/bad-foundations/bad-foundations.mac
+ *           (find-angg "bad-foundations/bad-foundations.mac")
+ *                            (find-baf "bad-foundations.mac")
+ * Author: Eduardo Ochs <eduardoochs@gmail.com>
+ * Version: 2026mar01
+ * License: GPL v2
+ *
+ * (defun bam () (interactive) (find-baf "bad-foundations.mac"))
+ * (defun bal () (interactive) (find-baf "bad-foundations.lisp"))
+ * 
+ * My article "Bad Foundations and Manipulable Objects" mentions some
+ * extensions for Maxima - an infix substitution operator, `_s_', and
+ * several things related to it. The article is here:
+ *
+ *   https://anggtwu.net/math-b.html#2026-bad-foundations
+ *
+ * It mentions:
+ * 
+ *   1. The `tex' property:             (find-bafpage 8 "how they are LATEXed")
+ *                                      (find-baftext 8 "how they are LATEXed")
+ *   2. Variants of `matrix':           (find-bafpage 9 "bmatrix")
+ *                                      (find-baftext 9 "bmatrix")
+ *   3. `verbatimmatrix':               (find-bafpage 9 "verbatimmatrix")
+ *                                      (find-baftext 9 "verbatimmatrix")
+ *   4. LispTree:                       (find-bafpage 9 "lisptree")
+ *                                      (find-baftext 9 "lisptree")
+ *   5. A prettified `subst':           (find-bafpage 10 "4.1       Substitution")
+ *                                      (find-baftext 10 "4.1       Substitution")
+ *   6. The infix `_s_':                (find-bafpage 11 "_s_")
+ *                                      (find-baftext 11 "_s_")
+ *   7. Lazy operations:                (find-bafpage 12 "+.")
+ *                                      (find-baftext 12 "+.")
+ *   8. `V', `becomes', `_ssu_':        (find-bafpage 13 "`V'")
+ *                                      (find-baftext 13 "`V'")
+ *   9. `__s_fstolambdas':              (find-bafpage 14 "__s_fstolambdas")
+ *                                      (find-baftext 14 "__s_fstolambdas")
+ *   10. The Emacs-based REPL:          (find-bafpage 16 "[OchsEmacsConf2024]")
+ *                                      (find-baftext 16 "[OchsEmacsConf2024]")
+ *   11. `RCV' and `mkholes':           (find-bafpage 18 "mkholes")
+ *                                      (find-baftext 18 "mkholes")
+ *   12. ODEs with separable variables: (find-bafpage 20 "ODEs")
+ *                                      (find-baftext 20 "ODEs")
+ *
+ * The article only shows "how things are LaTeXed", not "how they are
+ * displayed in the Emacs-based REPL" - that is the "ugly interface"
+ * that I explained in my presentation at the EmacsConf2024. See:
+ *
+ *   https://anggtwu.net/emacsconf2024.html
+ *   (find-eev2024hsubs "0:42" "ugly interface")
+ *   (find-eev2024video "0:42" "ugly interface")
+ *
+ * This file loads several other files:
+ *
+ *   1. It starts by loading edrxbox, that defines how certain
+ *      extensions - like `underbrace' and `verbatimmatrix' - are
+ *      displayed (but not LaTeXed). See:
+ *
+ *        https://anggtwu.net/maxima-edrxbox.html
+ *        (find-anggfile "MAXIMA/edrxbox.lisp")
+ *        (find-anggfile "MAXIMA/edrxbox-examples.lisp")
+ *
+ *   2. Then it loads LispTree, that uses `verbatimmatrix'es to
+ *      display its trees - `verbatimmatrix' uses some functions
+ *      defined in "edrxbox-examples.lisp". See:
+ *
+ *   3. Then it loads "bad-foundations.lisp", and then it loads/runs
+ *      the rest of "bad-foundations.mac".
+ *
+ * (defun bam () (interactive) (find-angg "MAXIMA/2026-bad-foundations.mac"))
+ * (defun bal () (interactive) (find-angg "MAXIMA/2026-bad-foundations.lisp"))
+ *
+ * «.load»			(to "load")
+ * «.format»			(to "format")
+ * «.format-tests»		(to "format-tests")
+ * «.makebare»			(to "makebare")
+ * «.makebare-tests»		(to "makebare-tests")
+ * «.lazy-ops»			(to "lazy-ops")
+ * «.lazy-ops-tests»		(to "lazy-ops-tests")
+ * «.align-eqs»			(to "align-eqs")
+ * «.align-eqs-tests»		(to "align-eqs-tests")
+ * «.fp-and-gp»			(to "fp-and-gp")
+ * «.fp-and-gp-tests»		(to "fp-and-gp-tests")
+ * «._s_»			(to "_s_")
+ * «._s__tests»			(to "_s__tests")
+ * «._ssu_»			(to "_ssu_")
+ * «._ssu__tests»		(to "_ssu__tests")
+ * «.mkholes»			(to "mkholes")
+ * «.mkholes-tests»		(to "mkholes-tests")
+ * «.RC»			(to "RC")
+ * «.RC-tests»			(to "RC-tests")
+ * «.integrate-at»		(to "integrate-at")
+ * «.integrate-at-tests»	(to "integrate-at-tests")
+ * «.EDOVS»			(to "EDOVS")
+ * «.EDOVS-tests»		(to "EDOVS-tests")
+ *
+ *
+ * «.S_f_g»			(to "S_f_g")
+ * «.S_f_g-tests»		(to "S_f_g-tests")
+ * «.MV»			(to "MV")
+ * «.MV-tests»			(to "MV-tests")
+ * «.DFI»			(to "DFI")
+ * «.DFI-tests»			(to "DFI-tests")
+*/
+
+
+
+
+
+/* «load»  (to ".load")
+ * Based on: (find-myqdraw "myqdraw3.mac" "load")
+ * Loads: (find-baf "edrxbox.lisp")
+ *        (find-baf "edrxbox-examples.lisp")
+ *        (find-baf   "lisptree.lisp")
+ *        (find-baf "lisptree.mac" "load-lisp")
+ *        (find-baf "lisptree.mac")
+ *        (find-baf "lazy-ops.lisp")
+ *        (find-baf "display-delegate.lisp")
+ *        (find-baf "bad-foundations.lisp")
+ *        (find-baf "sa-and-ga.mac")
+ *        (find-baf "edrx-methods.lisp")
+*/
+baf_dir : pathname_directory(load_pathname);
+load(concat(baf_dir, "edrxbox.lisp"));
+load(concat(baf_dir, "edrxbox-examples.lisp"));
+load(concat(baf_dir, "lisptree.mac"));
+load(concat(baf_dir, "lazy-ops.lisp"));
+load(concat(baf_dir, "display-delegate.lisp"));
+load(concat(baf_dir, "bad-foundations.lisp"));
+load(concat(baf_dir, "sa-and-ga.mac"));
+load(concat(baf_dir, "edrx-methods.lisp"));
+
+
+/* «format»  (to ".format")
+ * (find-es "maxima" "format")
+ * (find-angg "LUA/Clhs1.lua" "directives")
+ * (find-angg "LUA/Clhs1.lua" "directives" "Tilde S: Standard")
+*/
+format([args]) := apply(?format, append([false], args));
+/*
+ «format-tests»  (to ".format-tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+o1 : '( diff(x^2,x));
+o2 : '('diff(x^2,x));
+low(o) := format("~S",o);
+low(o) := format("~s",o);
+low(o1);
+low(o2);
+
+*/
+
+
+/* «makebare»  (to ".makebare")
+ * See: (find-baf "bad-foundations.lisp" "barematrix")
+*/
+makebare(M) := apply('barematrix, args(M));
+
+/* «makebare-tests»  (to ".makebare-tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+M1 : matrix([a,b],[c,d]);
+makebare(M1);
+
+*/
+
+
+
+/* «lazy-ops»        (to ".lazy-ops")
+ * «lazy-ops-tests»  (to ".lazy-ops-tests")
+ * All the definitions and tests for the lazy operations are here:
+ *   (find-baf "bad-foundations.lisp" "my-copy-properties")
+ *   (find-baf "bad-foundations.lisp" "lazy-operations")
+ *   (find-baf "bad-foundations.lisp" "lazy-operations-tests")
+*/
+
+
+/* «align-eqs»  (to ".align-eqs")
+ * `align_eqs' and `align_eqs_1c' are used to display sequences of
+ * equalities with their `='s aligned, like this:
+ *
+ *   (%i1) [align_eqs   (a=.b=.c, d=.e=.f),
+ *          align_eqs_1c(a=.b=.c, d=.e=.f)];
+ *                                             ┌      ┐
+ *                                ┌         ┐  │    a │
+ *                                │ a  =  b │  │ =  b │
+ *   (%o1)                       [│    =  c │, │ =  c │]
+ *                                │ d  =  e │  │    d │
+ *                                │    =  f │  │ =  e │
+ *                                └         ┘  │ =  f │
+ *                                             └      ┘
+ * See: (find-es "maxima" "align_eqs")
+*/
+align_eqs_1 (abcde) :=
+  block([a,b,cde,topline,otherlines],
+        abcde      : args(abcde),
+        [a,b,cde]  : [first(abcde), second(abcde), rest(abcde, 2)],
+        topline    : [a,"=",b],
+        otherlines : map(lambda([c],["","=",c]), cde),
+        append([topline], otherlines))$
+align_eqs_2 (abcdes) := map('align_eqs_1, args(abcdes));
+align_eqs_3 (abcdes) := apply('matrix, apply('append, align_eqs_2(abcdes)));
+align_eqs ([abcdes]) := align_eqs_3(abcdes);
+
+/* One column: */
+align_eqs_1c_1 (abcd) :=
+  block([a,bcd,topline,otherlines],
+        abcd       : args(abcd),
+        [a,bcd]    : [first(abcd), rest(abcd)],
+        topline    : ["", a],
+        otherlines : map(lambda([b],["=",b]), bcd),
+        append([topline], otherlines))$
+align_eqs_1c_2 (abcds) := map('align_eqs_1c_1, args(abcds));
+align_eqs_1c_3 (abcds) := apply('matrix, apply('append, align_eqs_1c_2(abcds)));
+align_eqs_1c ([abcds]) := align_eqs_1c_3(abcds);
+
+/*
+ «align-eqs-tests»  (to ".align-eqs-tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+align_eqs      (a=.b=.c=.d, e=.f=.g);
+align_eqs_1c   (a=.b=.c=.d, e=.f=.g);
+align_eqs      ([a,b,c,d], [e,f,g]);
+align_eqs_1c   ([a,b,c,d], [e,f,g]);
+
+align_eqs_1    ([a,b,c,d]);
+align_eqs_2   ([[a,b,c,d], [e,f,g]]);
+align_eqs_3   ([[a,b,c,d], [e,f,g]]);
+align_eqs      ([a,b,c,d], [e,f,g]);
+
+align_eqs_1c_1 ([a,b,c,d]);
+align_eqs_1c_2([[a,b,c,d], [e,f,g]]);
+align_eqs_1c_3([[a,b,c,d], [e,f,g]]);
+align_eqs_1c   ([a,b,c,d], [e,f,g]);
+
+*/
+
+
+
+/* «fp-and-gp»  (to ".fp-and-gp")
+ * Make fp and gp be LaTeXed as f' and g'.
+ * See: (find-baf "bad-foundations.lisp" "fp-and-gp")
+*/
+texput(fp, "f'");
+texput(gp, "g'");
+
+/*
+ «fp-and-gp-tests»  (to ".fp-and-gp-tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+o : fp(g(x)) *. gp(x);
+tex1(o);
+
+*/
+
+
+
+/* «_s_»  (to "._s_")
+ * See: (find-bafpage 11 "Infix")
+ *      (find-baftext 11 "Infix")
+ *      (find-bafpage 13 "Prettifying")
+ *      (find-baftext 13 "Prettifying")
+ *      (find-bafpage 14 "Substituting functions")
+ *      (find-baftext 14 "Substituting functions")
+
+ * Here we define our infix substitution operator, _s_,
+ * and some variants of it. Compare:
+ *
+ *   1. psubst([a=2,b=3], a+b=b+a) = (2+3=3+2)
+ *   2.        [2/a,3/b] (a+b=b+a) = (2+3=3+2)
+ *   3.      (a+b=b+a) [a:=2,b:=3] = (2+3=3+2)
+ *   4.    (a+b=b+a) _s_ [a=2,b=3] = (2+3=3+2)
+ *
+ * (1) above is the usual way to write simultaneous/parallel
+ * substitution Maxima; (2) is how simultaneous substitution is
+ * written in many books on Logic - e.g., Hindley/Seldin,
+ * "Lambda-Calculus and Combinators, an Introduction", p.11; (3) is a
+ * variant of (2) in which we use ":=" for "becomes", and in which
+ * "before" is always written at the left of "after"; (4) is the most
+ * natural translation of (3) to Maxima, and it can be implemented
+ * in just two lines:
+ *
+ *   "_s_"(obj, substs) := psubst(substs, obj);
+ *   infix("_s_");
+ *
+ * The code below implements a "(4) with improvements". One of the
+ * improvements is that we support substituting functions. Compare:
+ *
+ *   5. f(a,g(b,c))     [g(x,y)        := 10*x+y ] = f(a,10*b+c)
+ *   6. f(a,g(b,c)) _s_ [g(x,y)         = 10*x+y ] = f(a,10*b+c)
+ *   7. f(a,g(b,c)) _s_ [g = lambda([x,y],10*x+y)] = f(a,10*b+c)
+ *
+ * (5) makes all sense to mathematicians: we want to be able to write
+ * code in Maxima that looks similar enough to that. So we want (6) to
+ * work; the easiest way to make that work with psubst is to use
+ * lambdas, as in (7). But that is clumsy to write, so we want to make
+ * our _s_ do the translation (6)->(7) by itself. That translation is
+ * done by the function "__s_prep" below, that runs "__s_unlambda1" in
+ * the right places.
+ *
+ * The main variant of "_s_" that we define in this block is "_sss_".
+ * "_s_" returns only one thing: the result of the substition. "_sss_"
+ * returns three things; or, rather, it returns a substitution
+ * pretty-printed, with three things plus an "=". Here's an example:
+ *
+ *   (%i3) f(a)/b _sss_ [a=b,b=a];
+ *                                  f(a)  [ a := b ]   f(b)
+ *   (%o3)                         (----) [        ] = ----
+ *                                   b    [ b := a ]    a
+ *
+ * The second "thing" is the substitution [a=b,b=a] pretty-printed -
+ * note that it is displayed with ":="s instead of "="s. We also use a
+ * trick that is only visible when we convert the log of a Maxima
+ * session to LaTeX: the second "thing" is LaTeXed with
+ * "\begin{bmatrix}...\end{bmatrix}" instead of with
+ * "\begin{matrix}...\end{matrix}", and it appears with a matrix with
+ * square brackets instead of a matrix with parentheses.
+ *
+ * `__s_ftolambda' is defined in Lisp, here:
+ *   (find-baf "bad-foundations.lisp" "ftolambda")
+
+*/
+__s_flatten    (substs) := flatten([substs]);
+__s_fstolambdas(substs) := map('__s_ftolambda, __s_flatten(substs));
+
+__s_usebecomes1    (oe) := becomes(lhs(oe),rhs(oe));
+__s_usebecomes (substs) := map('__s_usebecomes1, __s_flatten(substs));
+  V            (substs) := apply('bmatrix, map("[", __s_usebecomes(substs)));
+
+      "_s_"  (o,substs) := psubst(__s_fstolambdas(substs), o);
+      "_ss_" (o,substs) := (o *. V(substs));
+      "_sss_"(o,substs) := (o *. V(substs)) = "_s_"(o, substs);
+infix("_s_"  ,99,101);
+infix("_ss_" ,99,101);
+infix("_sss_",99,101);
+
+
+/* «_s__tests»  (to "._s__tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+
+__s_ftolambda   (a=42);
+__s_ftolambda   (f(x)=x+2);
+__s_ftolambda   (g=lambda([x],x+2));
+__s_fstolambdas ([a=42, f(x)=x+2, g=lambda([x],x+2)]);
+
+__s_usebecomes1 (a=2);
+__s_usebecomes  ([a=2,b=3]);
+__s_usebecomes  ([a=2,[b=3,c=4]]);
+  V             ([a=2,[b=3,c=4]]);
+
+S1 : [f(x)=x^2+x^3];
+S2 : [a=b,b=a];
+S3 : [S2, S1];
+V(S3);
+
+f(a)/b _s_   S2;
+f(a)/b _ss_  S2;
+f(a)/b _sss_ S2;
+f(a)/b _sss_ S3;
+
+tex1(%);
+
+*/
+
+
+/* «_ssu_»  (to "._ssu_")
+ * A variant of `_sss_' that uses underbraces.
+ * See: (find-bafpage 13 "`_ssu_'")
+ *      (find-baftext 13 "`_ssu_'")
+ *      (find-bafpage  7 "Proofs with justifications")
+ *      (find-baftext  7 "Proofs with justifications")
+ *      (find-baf "bad-foundations.lisp" "tex-underbrace")
+ *      (find-baf "edrxbox-examples.lisp" "underbrace")
+*/
+      "_ssu_" (o,s) := underbrace(o _ss_ s, o _s_ s);
+      "_usu_" (u,s) := underbrace(u _ss_ s, args(u)[2] _s_ s);
+infix("_ssu_",99,101);
+infix("_usu_",99,101);
+
+/* «_ssu__tests»  (to "._ssu__tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+o1 : a+.b = c+.d;
+S1 : [a=2, c=4];
+S2 : [b=3, d=5];
+o1 _ssu_ S1;
+o1 _ssu_ S1 _usu_ S2;
+
+o1 : RCV;
+Sg : [g(x)=x^2, gp(x)=2*x];
+Sf : [f(x)=sin(x), fp(x)=cos(x)];
+o1 _ssu_ Sg _usu_ Sf;
+
+*/
+
+
+
+
+/* «mkholes»  (to ".mkholes")
+ * See: (find-bafpage 18 "mkholes")
+ *      (find-baftext 18 "mkholes")
+ *      (find-angg "MAXIMA/2026-lpp.mac" "holes")
+*/
+mkhole    (o,path) := apply('substpart, append(["?",o], path))$
+mkholes(o,[paths]) := ((for path in paths do o:mkhole(o,path)),o)$
+
+/*
+ «mkholes-tests»  (to ".mkholes-tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+mkholes(f(g(a,b),h(c,d)),[1,1],[2,2]);
+
+S : [f (x)=x^3,
+     fp(x)=3*x^2,
+     g (x)=log(x)+x^2,
+     gp(x)=1/x+2*x]$
+o : RCV _ssu_ S;
+mkholes(o, [1,2,1,1,2],
+           [1,2,2,1,2],
+           [1,2,3,1,2],
+           [1,2,4,1,2],
+           [2,2,2]);
+
+*/
+
+
+
+/* «RC»  (to ".RC")
+ * "RC"  is the chain rule - "regra da cadeia" in Portuguese.
+ * "RCV" is the chain rule, written vertically.
+ * "RCL" is the left hand side of the chain rule.
+ *
+ * The Chain Rule appears at the article in two points...
+ * at p.3, LaTeX by hand, and at p.18, using RCV:
+ *   (find-bafpage 3 "Chain Rule")
+ *   (find-baftext 3 "Chain Rule")
+ *   (find-bafpage 18 "RCV _ssu_ S")
+ *   (find-baftext 18 "RCV _ssu_ S")
+*/
+RC     :            (_diff(f(g(x)),x)     =   fp(g(x)) *. gp(x));
+RCV    : matrix(["", _diff(f(g(x)),x)], ["=", fp(g(x)) *. gp(x)]);
+RCL    :             _diff(f(g(x)),x);
+
+/* «RC-tests»  (to ".RC-tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+
+S1 : [f (x) = sin(x),
+      fp(x) = cos(x),
+      g (x) = 42*x,
+      gp(x) = 42];
+
+RCV _sss_ S1;
+RC _ss_ S1;
+RC _s_  S1;
+RC _s_  S1 _s_ [x = t];
+
+add2(S) := [S, fp(x)=diff(f(x) _s_ S, x),
+               gp(x)=diff(g(x) _s_ S, x)];
+
+RCL _sss_      [f(x)=sin(x)];
+RCL _sss_      [f(x)=sin(x), g(x)=x^2];
+RCV _sss_ add2([f(x)=sin(x), g(x)=x^2]);
+
+*/
+
+
+
+/* «integrate-at»  (to ".integrate-at")
+ * Variants of `integrate' and `at', and some basic formulas that use them.
+ * See: (find-maximanode "at")
+ *      (find-baf "edrxbox-examples.lisp" "antideriv")
+ *
+ * "_at"  is similar to the  "at" of Maxima, but "_at" is a lazy noun.
+ * "_At"  is similar to the "_at", but with different arguments.
+ * "_At2" is similar to the "_At", but "calculated in two places".
+ * "_At2" is also called the "difference operator".
+ *
+ * "DefDeriv"  is the definition of the derivative as a limit.
+ * "DefDeriv2" is a variant of "DefDeriv".
+ *
+ * "TFC2" is "Segundo Teorema Fundamental do Cálculo", a.k.a.
+ *           "Second Fundamental Theorem of Calculus".
+*/
+_Integrate(fx,x,a,b) := _integrate(fx,x,x=a,x=b);
+_At       (fx,x,a)   :=        _at(fx,  x=a);
+_At2_ad   (fx,x,a,b) :=  antideriv(fx,  x=a,x=b);
+_At2_bm   (fx,x,a,b) := barematrix(["", "|", x=b],
+                                   [fx, "|", ""],
+                                   ["", "|", x=a]);
+
+_At2_translate   (o) := apply(_At2_bm, args(o));  /* old, kept for tests */
+_At2_translate   (o) := apply(_At2_ad, args(o));  /* new, uses antideriv */
+_At2_tex         (o) := block([fx,x,a,b],
+                              [fx,x,a,b]:args(o),
+                              format("\\left.~a\\right|_{~a=~a}^{~a=~a}",
+                              tex1(fx), tex1(x),tex1(a), tex1(x),tex1(b)));
+
+display_delegate('_At2, '_At2_translate);
+texput          ('_At2, '_At2_tex);
+
+DefAt       :  _At (f(x),x,a)   =      f(a);
+DefDif      : (_At2(F(x),x,a,b) = F(b)-F(a));
+
+DefDeriv    : _At(_diff(f(x),x),x,a) = _limit((f(a+.eps)-f(a))/eps,eps,0);
+DefDeriv2   : _At(_diff(f(x),x),x,a) = _limit((f(x)-f(a))/(x-a),x,a);
+
+TFC2        : (_Integrate(Fp(x), x,a,b) = _At2(F(x),x,a,b));
+
+/* «integrate-at-tests»  (to ".integrate-at-tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+_At (g(u),u,2);
+_At2(g(u),u,2,3);
+DefAt;
+DefDif;
+DefDeriv;
+DefDeriv2;
+
+TFC2;
+TFC2 _ssu_ [F(x)=x^3, Fp(x)=3*x^2];
+TFC2 _s_   [F(x)=x^3, Fp(x)=3*x^2];
+
+_Integrate(f(x),x,a,b) =
+      _At2(F(x),x,a,b);
+
+o : _At2(fu,u,a,b);
+tex1(o);
+
+*/
+
+
+
+/* «EDOVS»  (to ".EDOVS")
+ * "EDO"   is "Equação Diferencial Ordinária", a.k.a.
+ *            "Ordinary Differential Equation".
+ * "EDOVS" is "Equação Diferencial Ordinária com Variáveis Separáveis", a.k.a.,
+ *            "Ordinary Differential Equation with Separable Variables.
+ *       See: (find-bafpage 20 "ODEs with separable variables")
+ *            (find-baftext 20 "ODEs with separable variables")
+*/
+EDOVS_M : matrix(
+  [              dy/dx, "=",       g(x) /. h(y)  ],
+  [         h(y) *. dy, "=",       g(x) *. dx    ],
+  [ _integrate(h(y),y), "=", _integrate(g(x),x)  ],
+  [             "||",    "",             "||"    ],
+  [         H(y) +. C1, "=",         G(x) +. C2  ],
+  [         H(y),       "=",         G(x) +. C3  ],
+  [    Hinv(H(y)),      "=",    Hinv(G(x) +. C3) ],
+  [          "||",       "",                 ""  ],
+  [           y,         "",                 ""  ])$
+
+EDOVS_edo : 'diff(y,x)   =           g(x) / h(y);
+EDOVS_imp : H(y)         =           G(x) +  C3;
+EDOVS_exp :   y          =      Hinv(G(x) +  C3);
+EDOVS_f   :                     Hinv(G(x) +  C3);
+
+/* «EDOVS-tests»  (to ".EDOVS-tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+linel : 110;
+S4  : [g(x) = -2*x,     h(y) = 2*y,
+       G(x) = -x^2,     H(y) = y^2]$
+S5p : [S4,           Hinv(y) =  sqrt(y)]$
+S5n : [S4,           Hinv(y) = -sqrt(y)]$
+
+[V(S4), V(S5p), V(S5n)];
+
+ EDOVS_M _sss_ S5p;
+[EDOVS_M,           EDOVS_M _s_ S4];
+[EDOVS_M   _s_ S5p, EDOVS_M _s_ S5n];
+ EDOVS_edo _s_ S5p;
+ EDOVS_imp _s_ S5p;
+ EDOVS_exp _s_ S5p;
+ EDOVS_f   _s_ S5p;
+
+edo   : EDOVS_edo _s_ S4;
+sol0  : ode2(edo,y,x);
+sols0 : solve(sol0, y);
+s0    : C3 = -2*%c;
+s1    : solve(s0, %c);
+sols1 : subst(s1, sols0);
+
+define(fp(x), EDOVS_f _s_ S5p);
+define(fn(x), EDOVS_f _s_ S5n);
+
+P1  : [x=3,y=4];
+eq1 : subst(P1, y=fp(x));
+eq2 : solve(eq1, C3);
+define(fp_P1(x), subst(eq2, fp(x)));
+subst(P1, y=fp_P1(x));
+
+P2  : [x=3,y=-4];
+eq1 : subst(P2, y=fn(x));
+eq2 : solve(eq1, C3);
+define(fn_P2(x), subst(eq2, fn(x)));
+subst(P1, y=fn_P2(x));
+
+*/
+
+
+
+/* «S_f_g»  (to ".S_f_g")
+ * Some functions to create substitutions (mainly for tests).
+*/
+S_gx    (gx)     := [g(x)=gx, gp(x)=diff(gx,x)];
+S_gx_fu (gx,fu)  := [g(x)=gx, gp(x)=diff(gx,x),
+                     f(u)=fu, fp(u)=diff(fu,u)];
+S_gx_fpu(gx,fpu) := [g(x)=gx, gp(x)=diff(gx,x),
+                              fp(u)=fpu];
+
+/* «S_f_g-tests»  (to ".S_f_g-tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+
+[V(S_gx    (x^2)),
+ V(S_gx_fu (x^2, sin(u))),
+ V(S_gx_fpu(x^2, cos(u)))];
+
+add_gpx(S) := [S, gp(x) = diff(g(x) _s_ S, x)];
+add_fpu(S) := [S, fp(u) = diff(f(u) _s_ S, u)];
+add_gpx_fpu(S) := add_fpu(add_gpx(S));
+
+S : [f(u)=sin(u), g(x)=x^2];
+[V(S), V(add_gpx(S)), V(add_gpx_fpu(S))];
+
+*/
+
+
+
+/* «MV»  (to ".MV")
+ * "MV" is "Mudança de variável", a.k.a.,
+ *         "Change of variable", a.k.a.
+ *         "Integration by substitution", in this sense:
+ *         https://en.wikipedia.org/wiki/Integration_by_substitution
+ *
+ * I did not use these formulas in the article, but they appear here:
+ *   (find-2026lppvideo "28:34" "Cálculo 2 é horrível")
+ *   (find-2026lpphsubs "28:34" "Cálculo 2 é horrível")
+ *   (wld2026p 25 "calculo-2-e-horrivel")
+ *   (wld2026a    "calculo-2-e-horrivel")
+*/
+MVD1  :  _Integrate(fp(g(x)) *. gp(x), x,a,b)
+       = _Integrate(fp(u),             u,g(a),g(b));
+MVI1  :  _integrate(fp(g(x)) *. gp(x), x)
+       = _integrate(fp(u),             u);
+
+MVD4_ :   _Integrate(fp(g(x)) *. gp(x),  x,a,b)
+       =. _At2      (f (g(x)),          x,a,b)
+       =.           (f(g(b)) -. f(g(a)))
+       =. _At2      (f (u),             u,g(a),g(b))
+       =. _Integrate(fp(u),             u,g(a),g(b));
+
+MVI3_ :   _integrate(fp(g(x)) *. gp(x), x)
+       =.            f (g(x))
+       =.            f (u)
+       =. _integrate(fp(u),             u);
+
+MVD1V : align_eqs_1c(MVD1);
+MVI1V : align_eqs_1c(MVI1);
+MVD4  : align_eqs   (MVD4_);
+MVD4V : align_eqs_1c(MVD4_);
+MVI3  : align_eqs   (MVI3_);
+MVI3V : align_eqs_1c(MVI3_);
+
+MVs : matrix([MVI1,  "", MVD1],
+             [MVI3V, "", MVD4V]);
+
+/* «MV-tests»  (to ".MV-tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+S4 : S_gx_fu (x^2, sin(u))$
+S3 : S_gx_fpu(x^2,        cos(u))$
+[V(S3), V(S4)];
+MVI1;
+MVI3;
+MVI3V;
+MVD1;
+MVD4;
+MVD4V;
+MVI1 _s_ S3;
+
+linel : 110;
+MVD4V _sss_ S4;
+
+MVs;
+
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+S4 : S_gx_fu (sin(x), log(u)^4)$
+S3 : S_gx_fpu(sin(x),          4*log(u)^3 / u)$
+[V(S3), V(S4)];
+MVI1 _s_ S3;
+MVD4 _s_ S4;
+
+*/
+
+
+
+/* «DFI»  (to ".DFI")
+ * "DFI" is "Derivada da função inversa", a.k.a.,
+ *          "Derivative of the inverse function", a.k.a. this:
+ *          https://en.wikipedia.org/wiki/Inverse_function_rule
+ *
+ * A version of DFI6 appears in this page of the article:
+ *   (find-bafpage 4 "One day I write the part `M'")
+ *   (find-baftext 4 "One day I write the part `M'")
+*/
+DFI6 : align_eqs([f(g(x)), x],
+                 [_diff(f(g(x)),x), _diff(x,x), 1],
+                 [_diff(f(g(x)),x), fp(g(x)) *. gp(x)],
+                 [fp(g(x)) *. gp(x), 1],
+                 [gp(x), 1/fp(g(x))]);
+
+DFI2 : align_eqs([f(g(x)), x],
+                 [gp(x), 1/fp(g(x))]);
+
+/* «DFI-tests»  (to ".DFI-tests")
+ (eepitch-maxima)
+ (eepitch-kill)
+ (eepitch-maxima)
+load("bad-foundations.mac");
+linel : 110;
+
+Sg : [g(x)=Log(x), gp(x)=Logp(x)];
+Sf : [f(x)=Exp(x), fp(x)=Expp(x)];
+
+DFI6;
+DFI6 _s_ Sg;
+DFI6 _s_ Sg _s_ Sf;
+DFI2;
+DFI2 _s_ Sg _s_ Sf;
+DFI2 _sss_ [Sg,Sf];
+DFI2 _ssu_ [Sg,Sf];
+
+[o1,o2] : [DFI6,copy(DFI6)]$
+o2[4][2] : eqn(4)$
+[o1,o2];
+
+*/
+
+
+
+
+/*
+ * Local Variables:
+ * coding:  utf-8-unix
+ * End:
+*/
